@@ -9,6 +9,9 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import Background from "./layout/background";
+import Footer from "./components/Footer";
+import Nav from "./components/Nav";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -28,12 +31,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="Pat" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
       <body>
+        <Background />
+        <Nav />
         {children}
+        <Footer />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -62,14 +68,16 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
+    <main className="pt-16 p-6 container mx-auto">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-light text-gray-900 mb-4">{message}</h1>
+        <p className="text-gray-600 mb-6">{details}</p>
+        {stack && (
+          <pre className="w-full p-4 overflow-x-auto bg-white/80 backdrop-blur-sm rounded-lg border border-gray-200">
+            <code className="text-gray-700 text-sm">{stack}</code>
+          </pre>
+        )}
+      </div>
     </main>
   );
 }

@@ -221,7 +221,7 @@ export default function PatSandbox() {
 
       if (result.success) {
         // Format successful type checking result
-        let output = ` Pat Type Checking: PASSED
+        let output = `Pat Type Checking: PASSED
 
 ${result.summary}
 
@@ -248,7 +248,7 @@ ${result.warnings.map((w: any) => `• Line ${w.line}: ${w.message}`).join("\n")
         setOutput(output);
       } else {
         // Format error result
-        let errorOutput = ` Pat Type Checking: FAILED
+        let errorOutput = `Pat Type Checking: FAILED
 
 ${result.summary}
 

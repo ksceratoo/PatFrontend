@@ -1,12 +1,6 @@
-import { exec } from "child_process";
-import { promisify } from "util";
-import { writeFile, unlink, access } from "fs/promises";
-import fs from "fs";
-import path from "path";
+// Simplified Pat type checker API for production deployment
+// This version works without requiring mbcheck binary
 
-const execAsync = promisify(exec);
-
-// POST /api/check-pat
 export async function action({ request }: any) {
   try {
     const { code } = await request.json();
@@ -21,8 +15,8 @@ export async function action({ request }: any) {
       );
     }
 
-    // Use real mbcheck for Pat type checking
-    const typeCheckResult = await runMbcheck(code);
+    // Use simplified type checking
+    const typeCheckResult = await runSimplifiedTypeChecker(code);
 
     return Response.json(typeCheckResult);
   } catch (error: any) {
@@ -37,138 +31,7 @@ export async function action({ request }: any) {
   }
 }
 
-// Run real mbcheck on Pat code
-async function runMbcheck(code: string) {
-  const tempFileName = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}.pat`;
-  const tempFilePath = path.join(
-    process.cwd(),
-    "patCom",
-    "paterl",
-    "mbcheck",
-    tempFileName
-  );
-  const mbcheckPath = path.join(
-    process.cwd(),
-    "patCom",
-    "paterl",
-    "mbcheck",
-    "mbcheck"
-  );
-
-  try {
-    // Preflight: ensure mbcheck exists and is executable
-    try {
-      await access(mbcheckPath, fs.constants.X_OK);
-    } catch {
-      // Fallback: If mbcheck is not available, use a simplified type checker
-      console.warn("mbcheck not available, using simplified type checker");
-      return runSimplifiedTypeChecker(code);
-    }
-
-    // Write Pat code to temporary file
-    await writeFile(tempFilePath, code, "utf8");
-
-    // Run mbcheck with verbose output
-    const { stdout, stderr } = await execAsync(
-      `cd "${path.dirname(mbcheckPath)}" && ./mbcheck "${tempFileName}" -v`,
-      {
-        timeout: 10000, // 10 second timeout
-      }
-    );
-
-    // Parse mbcheck output
-    const result = parseMbcheckOutput(stdout, stderr);
-
-    // Clean up temporary file
-    await unlink(tempFilePath);
-
-    return result;
-  } catch (error: any) {
-    // Clean up temporary file on error
-    try {
-      await unlink(tempFilePath);
-    } catch {}
-
-    // Handle mbcheck errors
-    if (error.code === 123) {
-      // mbcheck type checking failed
-      return parseMbcheckError(error.stderr || error.stdout || error.message);
-    } else if (error.code === 124) {
-      // mbcheck command line error
-      return {
-        success: false,
-        errors: [
-          {
-            type: "Syntax Error",
-            message: "Invalid Pat syntax - could not parse the code",
-            line: 1,
-            severity: "error",
-          },
-        ],
-        warnings: [],
-        typeInfo: [],
-        summary: "Pat syntax error - please check your code structure",
-      };
-    } else {
-      // Other errors (timeout, file system, etc.)
-      return {
-        success: false,
-        errors: [
-          {
-            type: "System Error",
-            message: `Type checking failed: ${error.message}`,
-            line: 1,
-            severity: "error",
-          },
-        ],
-        warnings: [],
-        typeInfo: [],
-        summary: "Type checking system error",
-      };
-    }
-  }
-}
-
-// Parse successful mbcheck output
-function parseMbcheckOutput(stdout: string, stderr: string) {
-  const lines = stdout.split("\n");
-  const typeInfo: string[] = [];
-  const warnings: any[] = [];
-
-  // Look for final type result
-  const typeMatch = stdout.match(/Type:\s*(.+)$/m);
-  if (typeMatch) {
-    typeInfo.push(` Type checking passed - Program type: ${typeMatch[1]}`);
-  }
-
-  // Look for constraint solving info
-  if (stdout.includes("=== Resolved Program: ===")) {
-    typeInfo.push(" All mailbox constraints successfully resolved");
-  }
-
-  // Look for interface information
-  const interfaceMatches = stdout.match(/interface\s+\w+/g);
-  if (interfaceMatches && interfaceMatches.length > 0) {
-    typeInfo.push(` ${interfaceMatches.length} interface(s) verified`);
-  }
-
-  // Look for guard patterns
-  const guardMatches = stdout.match(/guard\s+\w+\s*:\s*[^\{]+/g);
-  if (guardMatches && guardMatches.length > 0) {
-    typeInfo.push(` ${guardMatches.length} guard pattern(s) type-checked`);
-  }
-
-  return {
-    success: true,
-    errors: [],
-    warnings,
-    typeInfo,
-    summary: "Pat type checking passed, all mailbox communications are safe!",
-    rawOutput: stdout, // Include raw output for debugging
-  };
-}
-
-// Simplified type checker for when mbcheck is not available
+// Simplified type checker that doesn't require mbcheck binary
 async function runSimplifiedTypeChecker(code: string) {
   try {
     // Basic syntax validation for Pat code
@@ -203,7 +66,7 @@ async function runSimplifiedTypeChecker(code: string) {
       errors: [
         {
           type: "System Error",
-          message: `Fallback type checker error: ${error.message}`,
+          message: `Type checker error: ${error.message}`,
           line: 1,
           severity: "error",
         },
@@ -220,10 +83,9 @@ async function runSimplifiedTypeChecker(code: string) {
 function validatePatSyntax(code: string) {
   const errors: any[] = [];
   const lines = code.split("\n");
-
   let braceStack: string[] = [];
+  let inInterface = false;
 
-  // Check for basic syntax patterns
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     const lineNum = i + 1;
@@ -260,6 +122,7 @@ function validatePatSyntax(code: string) {
           severity: "error",
         });
       }
+      inInterface = true;
     }
 
     // Check guard statements
@@ -346,18 +209,22 @@ function validatePatSemantics(code: string) {
   const hasNew = code.includes("new[");
   const hasSend = code.includes("!");
   const hasGuard = code.includes("guard");
+  const hasReceive = code.includes("receive");
+  const hasFree = code.includes("free");
 
   if (hasSpawn) typeInfo.push("✓ Concurrent spawning detected");
   if (hasNew) typeInfo.push("✓ Mailbox creation detected");
   if (hasSend) typeInfo.push("✓ Message sending detected");
   if (hasGuard) typeInfo.push("✓ Guard patterns detected");
+  if (hasReceive) typeInfo.push("✓ Message receiving detected");
+  if (hasFree) typeInfo.push("✓ Resource freeing detected");
 
   // Basic validation warnings
-  if (hasNew && !hasGuard) {
+  if (hasNew && !hasGuard && !hasReceive) {
     warnings.push({
       type: "Potential Issue",
       message:
-        "Mailbox created but no guard patterns found - ensure messages are consumed",
+        "Mailbox created but no guard patterns or receive statements found - messages may not be consumed",
       line: 1,
       severity: "warning",
     });
@@ -366,7 +233,31 @@ function validatePatSemantics(code: string) {
   if (hasSend && !hasNew) {
     warnings.push({
       type: "Potential Issue",
-      message: "Messages sent but no mailbox creation found",
+      message:
+        "Messages sent but no mailbox creation found - verify target mailboxes exist",
+      line: 1,
+      severity: "warning",
+    });
+  }
+
+  if (hasSpawn && !hasSend && !hasNew) {
+    warnings.push({
+      type: "Potential Issue",
+      message:
+        "Process spawned but no communication detected - consider adding mailbox operations",
+      line: 1,
+      severity: "warning",
+    });
+  }
+
+  // Check for potential resource leaks
+  const newCount = (code.match(/new\[/g) || []).length;
+  const freeCount = (code.match(/free\(/g) || []).length;
+
+  if (newCount > freeCount && newCount > 0) {
+    warnings.push({
+      type: "Resource Management",
+      message: `${newCount} mailbox(es) created but only ${freeCount} freed - potential resource leak`,
       line: 1,
       severity: "warning",
     });
@@ -404,75 +295,4 @@ function extractDefinitions(code: string): string[] {
   }
 
   return definitions;
-}
-
-// Parse mbcheck error output
-function parseMbcheckError(errorOutput: string) {
-  const errors: any[] = [];
-  const lines = errorOutput.split("\n");
-
-  // Common mbcheck error patterns
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Parse line number from error messages
-    const lineMatch = line.match(/line (\d+)/);
-    const lineNum = lineMatch ? parseInt(lineMatch[1]) : 1;
-
-    if (line.includes("Parse error") || line.includes("syntax error")) {
-      errors.push({
-        type: "Syntax Error",
-        message: line.trim(),
-        line: lineNum,
-        severity: "error",
-      });
-    } else if (line.includes("Type error") || line.includes("type mismatch")) {
-      errors.push({
-        type: "Type Error",
-        message: line.trim(),
-        line: lineNum,
-        severity: "error",
-      });
-    } else if (line.includes("Constraint") || line.includes("constraint")) {
-      errors.push({
-        type: "Constraint Error",
-        message: line.trim(),
-        line: lineNum,
-        severity: "error",
-      });
-    } else if (line.includes("Mailbox") || line.includes("mailbox")) {
-      errors.push({
-        type: "Mailbox Error",
-        message: line.trim(),
-        line: lineNum,
-        severity: "error",
-      });
-    } else if (line.trim() && line.includes("Error")) {
-      errors.push({
-        type: "Pat Error",
-        message: line.trim(),
-        line: lineNum,
-        severity: "error",
-      });
-    }
-  }
-
-  // If no specific errors found, create a general error
-  if (errors.length === 0) {
-    errors.push({
-      type: "Type Checking Failed",
-      message: errorOutput.trim() || "Pat type checking failed",
-      line: 1,
-      severity: "error",
-    });
-  }
-
-  return {
-    success: false,
-    errors,
-    warnings: [],
-    typeInfo: [],
-    summary: `❌ Found ${errors.length} type error(s) - Pat type checking failed`,
-    rawOutput: errorOutput,
-  };
 }

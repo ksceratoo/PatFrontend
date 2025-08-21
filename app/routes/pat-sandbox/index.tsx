@@ -260,7 +260,7 @@ ${result.errors.map((e: any) => `• Line ${e.line}: [${e.type}] ${e.message}`).
 ${result.warnings.map((w: any) => `• Line ${w.line}: ${w.message}`).join("\n")}`;
         }
 
-        errorOutput += `\n\n💡 Fix these errors to enable Pat's safety guarantees!`;
+        errorOutput += `\n\n Fix these errors to enable Pat's safety guarantees!`;
 
         // Guidance when checker not available
         if (

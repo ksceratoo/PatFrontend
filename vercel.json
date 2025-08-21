@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "patCom/**"
+      }
+    }
+  ],
+  "buildCommand": "npm run build:vercel",
+  "installCommand": "npm ci",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/build/server/index.js"
+    }
+  ]
+}

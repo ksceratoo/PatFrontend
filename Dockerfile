@@ -8,6 +8,7 @@ RUN apk add --no-cache \
   gcc \
   musl-dev \
   make \
+  git \
   && rm -rf /var/cache/apk/*
 
 # Copy package files

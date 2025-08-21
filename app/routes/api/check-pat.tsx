@@ -47,7 +47,7 @@ async function runMbcheck(code: string) {
     "mbcheck",
     tempFileName
   );
-  // Try Linux binary first (for cloud deployment), then fall back to local binary
+  // Try to find an available mbcheck binary
   const mbcheckLinuxPath = path.join(
     process.cwd(),
     "patCom",
@@ -63,28 +63,49 @@ async function runMbcheck(code: string) {
     "mbcheck"
   );
 
-  let mbcheckPath = mbcheckLocalPath;
+  let mbcheckPath = null;
+  let mbcheckType = null;
 
-  // Check if Linux binary exists (for cloud deployment)
+  // First try Linux binary (for cloud deployment)
   try {
     await access(mbcheckLinuxPath, fs.constants.X_OK);
     mbcheckPath = mbcheckLinuxPath;
-    console.log("Using Linux mbcheck binary");
+    mbcheckType = "Linux";
+    console.log("✅ Using Linux mbcheck binary");
   } catch {
+    console.log("⚠️ Linux mbcheck binary not found");
+
     // Fall back to local binary
-    console.log("Linux binary not found, trying local binary");
+    try {
+      await access(mbcheckLocalPath, fs.constants.X_OK);
+      mbcheckPath = mbcheckLocalPath;
+      mbcheckType = "Local";
+      console.log("✅ Using local mbcheck binary");
+    } catch {
+      console.error("❌ No mbcheck binary found");
+    }
+  }
+
+  // If no mbcheck is available, return helpful error message
+  if (!mbcheckPath) {
+    return {
+      success: false,
+      errors: [
+        {
+          type: "System Error",
+          message: "Pat type checker (mbcheck) is not available on this server",
+          line: 1,
+          severity: "error",
+        },
+      ],
+      warnings: [],
+      typeInfo: [],
+      summary: "❌ Type checking unavailable - mbcheck binary not found",
+      error: `Pat type checker is not available on this deployment.\n\nTo enable full Pat type checking:\n1. Build mbcheck locally (see patCom/paterl/mbcheck/README.md)\n2. Deploy with the compiled binary\n3. Or use a local development environment\n\nFor online Pat syntax checking, please use the local development setup.`,
+    };
   }
 
   try {
-    // Preflight: ensure mbcheck exists and is executable
-    try {
-      await access(mbcheckPath, fs.constants.X_OK);
-    } catch {
-      // Fallback: If mbcheck is not available, use a simplified type checker
-      console.warn("mbcheck not available, using simplified type checker");
-      return runSimplifiedTypeChecker(code);
-    }
-
     // Write Pat code to temporary file
     await writeFile(tempFilePath, code, "utf8");
 

@@ -78,6 +78,7 @@ async function runMbcheck(code: string) {
 
     // Run mbcheck with verbose output
     // Use absolute path and handle serverless environment limitations
+    const mbcheckDir = path.dirname(mbcheckPath);
     const command = isVercel
       ? `"${mbcheckPath}" "${tempFilePath}" -v`
       : `cd "${mbcheckDir}" && ./"${path.basename(mbcheckPath)}" "${tempFileName}" -v`;

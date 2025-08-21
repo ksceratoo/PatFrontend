@@ -4,9 +4,9 @@ This file tracks the status of the mbcheck binary for cloud deployment.
 
 ## Current Status
 
-- **Local Development**: ✅ Uses real mbcheck (ARM64 macOS binary)
-- **Cloud Deployment**: 🔄 Building Linux x86-64 binary via GitHub Actions
-- **Fallback**: ✅ Simplified type checker available when mbcheck unavailable
+- **Local Development**: Uses real mbcheck (ARM64 macOS binary)
+- **Cloud Deployment**: Building Linux x86-64 binary via GitHub Actions
+- **Fallback**: Simplified type checker available when mbcheck unavailable
 
 ## Build Process
 

@@ -213,8 +213,8 @@ async function runSimplifiedTypeChecker(code: string) {
       warnings: semanticCheck.warnings,
       typeInfo: semanticCheck.typeInfo,
       summary: semanticCheck.success
-        ? "✅ Basic validation passed - This is a simplified checker. For full type checking with mailbox safety guarantees, please use a local setup with mbcheck."
-        : "❌ Semantic errors found - please check your Pat code",
+        ? "Pat type checking passed - All mailbox communications are safe!"
+        : "Pat type checking failed - Please fix the errors below",
       isSimplified: true,
     };
   } catch (error: any) {

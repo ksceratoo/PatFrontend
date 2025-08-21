@@ -40,16 +40,15 @@ export async function action({ request }: any) {
 // Run real mbcheck on Pat code
 async function runMbcheck(code: string) {
   const tempFileName = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}.pat`;
-  const mbcheckDir = path.join(process.cwd(), "patCom", "paterl", "mbcheck");
-  const tempFilePath = path.join(mbcheckDir, tempFileName);
+  const tempFilePath = path.join(process.cwd(), "mbcheck", tempFileName);
 
   // Try Linux binary first, then fallback to regular mbcheck
   let mbcheckPath = path.join(process.cwd(), "mbcheck-linux");
   try {
     await access(mbcheckPath, fs.constants.X_OK);
   } catch {
-    // Fallback to original mbcheck
-    mbcheckPath = path.join(mbcheckDir, "mbcheck");
+    // Fallback to mbcheck in mbcheck directory
+    mbcheckPath = path.join(process.cwd(), "mbcheck", "mbcheck");
   }
 
   // Check if we're in a serverless environment

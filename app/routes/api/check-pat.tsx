@@ -46,9 +46,33 @@ async function runMbcheck(code: string) {
   let mbcheckPath = path.join(process.cwd(), "mbcheck-linux");
   try {
     await access(mbcheckPath, fs.constants.X_OK);
+    // Check if it's a placeholder file
+    const fileContent = await fs.readFileSync(mbcheckPath, "utf8");
+    if (fileContent.includes("placeholder")) {
+      throw new Error("Placeholder file detected");
+    }
   } catch {
     // Fallback to mbcheck in mbcheck directory
     mbcheckPath = path.join(process.cwd(), "mbcheck", "mbcheck");
+    try {
+      await access(mbcheckPath, fs.constants.X_OK);
+    } catch {
+      return {
+        success: false,
+        errors: [
+          {
+            type: "System Error",
+            message:
+              "No working mbcheck binary found. Please wait for GitHub Actions to build mbcheck-linux or ensure mbcheck is available.",
+            line: 1,
+            severity: "error",
+          },
+        ],
+        warnings: [],
+        typeInfo: [],
+        summary: "Type checker not available",
+      };
+    }
   }
 
   // Check if we're in a serverless environment

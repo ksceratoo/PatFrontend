@@ -10,8 +10,8 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Background from "./layout/background";
-import Footer from "./components/Footer";
-import Nav from "./components/Nav";
+import Footer from "./components/PageElements/Footer";
+import Nav from "./components/Navs/Nav";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -32,6 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="Pat" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/icon.png" />
         <Meta />
         <Links />
       </head>

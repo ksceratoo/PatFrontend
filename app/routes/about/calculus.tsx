@@ -50,7 +50,7 @@ const Calculus = () => {
             className="text-4xl font-light text-gray-900 mb-8"
             variants={itemVariants}
           >
-            📬 Mailbox Calculus
+            Mailbox Calculus
           </motion.h1>
 
           <motion.div className="space-y-6 text-gray-700 leading-relaxed">
@@ -190,7 +190,7 @@ const Calculus = () => {
               className="bg-yellow-50 p-6 rounded-lg border border-yellow-200"
             >
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-                🧠 Why Is It Important?
+                Why Is It Important?
               </h3>
               <p className="text-gray-700 mb-4">
                 Mailbox Calculus laid the theoretical foundation for practical

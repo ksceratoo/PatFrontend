@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router";
 
 const Hero = () => {
   const containerVariants = {
@@ -73,20 +74,23 @@ const Hero = () => {
           <motion.div variants={itemVariants}>
             <p className="text-lg text-gray-700 leading-relaxed">
               The first language in the world with a mailbox typing system,
-              developed by the STARDUST team from{" "}
-              <span className="text-gray-900 font-medium">
-                University of Glasgow.
-              </span>
-            </p>
-            <p className="text-gray-600 text-md font-medium mt-4 flex justify-center">
-              The next-generation programming language designed for
-              pattern-driven development and bulletproof concurrency
+              developed by the{" "}
+              <a
+                href="https://epsrc-stardust.github.io/"
+                className="text-gray-900 font-medium underline hover:text-gray-700"
+                target="_blank"
+              >
+                STARDUST team from{" "}
+                <span className="text-gray-900 font-medium">
+                  University of Glasgow.
+                </span>
+              </a>
             </p>
           </motion.div>
 
           {/* Call-to-Action Buttons */}
           <motion.div
-            className="flex flex-col sm:flex-row gap-4"
+            className="flex flex-col sm:flex-row gap-4 "
             variants={itemVariants}
           >
             <motion.button
@@ -103,7 +107,9 @@ const Hero = () => {
               whileHover="hover"
               whileTap={{ scale: 0.95 }}
             >
-              <span>Sandbox</span>
+              <Link to="/pat-sandbox">
+                <span>Pat Sandbox</span>
+              </Link>
               <svg
                 className="w-4 h-4"
                 fill="none"

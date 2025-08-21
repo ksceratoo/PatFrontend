@@ -1,0 +1,52 @@
+4.1 Pat Syntax, Types and Mailbox Types
+Pat is a core first-order programming language with mailbox types. A more detailed description
+is available in [15] that describes the declarative and algorithmic type systems, shows that the
+algorithmic type system is sound and complete with respect to the declarative type system, and
+provides a concurrent operational semantics.
+
+
+Typing Actor Communication in Languages with Implicit Monolithic Mailboxes 11
+−→
+A program (S,
+𝐷,𝑀)consists of a signature S which maps message tags to payload types; a set
+of definitions 𝐷; and an initial term 𝑀. Each definition def 𝑓(−−→
+𝑥:𝑇):𝑈{𝑀}is a function with name
+−−→
+𝑓, annotated arguments
+𝑥:𝑇, return type 𝑈, and body 𝑀.
+Figure 7 gives the Pat data and mailbox types and syntax. This is the target of the translation
+from an Erlang subset.
+Syntax. Pat distinguishes syntactically between values and computations, as in fine-grain call-
+by-value [30]. Values 𝑣 include variables 𝑥 and literals 𝑙; and the literals include a unit value ()of
+type 1.
+The functional fragment of the language is largely standard. Every value is a term. The only
+evaluation context is let 𝑥=𝑒 in 𝑑. Function application f (𝑣1,...,𝑣𝑛)applies function 𝑓 to arguments
+𝑣1,...,𝑣𝑛.
+In the concurrent fragment of the language, spawn 𝑒 spawns term 𝑒 as a separate actor/process,
+and new [i]creates a fresh mailbox that conforms to interface i. Recall from the introduction that an
+interface specifies the set of message types that a mailbox expects. So the interface for the Id Server
+mailbox is PWT: Please supply an example. Term 𝑥 ! 𝑚sends message 𝑚to 𝑥. The guard 𝑥: 𝐴{𝑔}
+expression asserts that mailbox 𝑥 contains pattern 𝐴, and invokes a guard sequence 𝑔. The fail
+guard is triggered when an unexpected message has arrived; free(𝑥)is triggered when a mailbox
+is empty and there are no more references to it in the system. PWT: Duncan: please add a sentence
+explaining guard sequences A guard sequence ...
+Type System. The data types in Pat are unsurprising, so here we focus on describing the mailbox
+types. A mailbox type consists of a capability, either output !or input ?, and a pattern. A system can
+contain multiple references to a mailbox as an output capability, but only one as an input capability.
+A pattern is a commutative regular expression, i.e., a regular expression where composition is
+unordered. The 1 pattern is the unit of pattern composition ⊙, denoting the empty mailbox. The
+0 pattern denotes the unreliable mailbox, which has received an unexpected message. It is not
+possible to send to, or receive from, an unreliable mailbox, but we show that reduction does not
+cause a mailbox to become unreliable.
+The pattern m denotes a mailbox containing a single message m. Pattern choice 𝐴⊕𝐵denotes
+that the mailbox contains either messages conforming to pattern 𝐴or 𝐵. Pattern composition 𝐴⊙𝐵
+denotes that the mailbox contains messages pertaining to 𝐴and 𝐵 (in either order). Finally, 𝐴∗
+denotes replication of 𝐴, so m∗denotes a mailbox that may contain zero or more instances of
+message m. Mailbox patterns obey the usual laws of commutative regular expressions, e.g. 1 is the
+unit for ⊙, while 0 is the unit for ⊕and is cancelling for ⊙.
+It follows that different syntactic representations of patterns may have the same meaning, e.g.
+patterns 1 ⊕0 ⊕(m ⊙n)and 1 ⊕(n ⊙m). Pat follows [12] and uses a set-of-multisets semantics for
+mailbox patterns. The intuition is that each multiset defines a configuration of messages that could
+be present in the mailbox. For example a semantic representation of both of the patterns above is
+{⟨⟩,⟨m,n⟩}.
+PWT: Do we need to say more about Pat types?

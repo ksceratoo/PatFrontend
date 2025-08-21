@@ -1,5 +1,5 @@
-import InnovationCard from "~/components/InnovationCard";
-import Nav from "~/components/Nav";
+import InnovationCard from "~/components/PageElements/InnovationCard";
+import Nav from "~/components/Navs/Nav";
 import { motion } from "framer-motion";
 
 const About = () => {
@@ -7,18 +7,9 @@ const About = () => {
     {
       title: "Mailbox Types",
       description:
-        "Revolutionary behavioral type system that validates the entire state of actor mailboxes at compile time, preventing deadlocks and protocol violations.",
+        "A behavioral type system that validates the state of actor mailboxes at compile time, preventing deadlocks and protocol violations.",
     },
-    {
-      title: "Quasi-Linear Typing",
-      description:
-        "Novel approach to resource management that guarantees memory safety and prevents use-after-free errors without garbage collection overhead.",
-    },
-    {
-      title: "Pattern-Driven Development",
-      description:
-        "Advanced pattern matching capabilities that make complex concurrent logic simple and expressive to write and maintain.",
-    },
+
     {
       title: "Correct by Construction",
       description:
@@ -105,9 +96,13 @@ const About = () => {
         animate="visible"
       >
         <motion.div
-          className="max-w-xl mx-auto bg-white/80 backdrop-blur-sm border-2 border-gray-300 rounded-lg p-6 hover:shadow-lg transition-all duration-300"
+          className="max-w-xl mx-auto bg-white/80 backdrop-blur-sm border-2 border-gray-300 rounded-lg p-6 
+          hover:shadow-lg transition-all duration-300 hover:cursor-pointer"
           variants={cardVariants}
           whileHover={{ y: -5, scale: 1.02 }}
+          onClick={() => {
+            window.location.href = "/about/behavioural";
+          }}
         >
           <motion.h1
             className="text-3xl font-bold text-gray-900 flex items-center mb-4"
@@ -132,18 +127,23 @@ const About = () => {
             Actor languages like Erlang and Elixir are powerful for building
             distributed systems, but they remain vulnerable to subtle
             concurrency bugs: receiving unexpected messages, deadlocks, and
-            protocol violations. These errors are often sporadic and incredibly
-            difficult to debug in production.
+            protocol violations. These errors are incredibly difficult to debug
+            in production.
           </motion.p>
         </motion.div>
 
         <motion.div
-          className="max-w-xl mx-auto bg-white/80 backdrop-blur-sm border-2 border-gray-300 rounded-lg p-6 hover:shadow-lg transition-all duration-300"
+          className="max-w-xl mx-auto bg-white/80 backdrop-blur-sm border-2 
+          border-gray-300 rounded-lg p-6 hover:shadow-lg transition-all duration-300
+          hover:cursor-pointer "
           variants={cardVariantsRight}
           whileHover={{ y: -5, scale: 1.02 }}
+          onClick={() => {
+            window.location.href = "/about/behavioural";
+          }}
         >
           <motion.h1
-            className="text-3xl font-bold text-gray-900 flex items-center mb-4"
+            className="text-3xl font-bold text-gray-900 flex items-center mb-4 "
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
@@ -156,15 +156,18 @@ const About = () => {
             The Solution
           </motion.h1>
           <motion.p
-            className="text-gray-700 mt-5 text-md font-medium leading-relaxed"
+            className="text-gray-700 mt-5 text-md font-medium leading-relaxed "
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.8 }}
+            onClick={() => {
+              window.location.href = "/documentation";
+            }}
           >
-            Pat introduces Mailbox Types, a revolutionary behavioral type
-            system. Instead of just checking message order, it validates the
-            entire state of a mailbox at compile time, ensuring actors are
-            always prepared for the messages they can receive.
+            Pat introduces Mailbox Types, a behavioral type system. Instead of
+            just checking message order, it validates the entire state of a
+            mailbox at compile time, ensuring actors are always prepared for the
+            messages they can receive.
           </motion.p>
         </motion.div>
       </motion.div>

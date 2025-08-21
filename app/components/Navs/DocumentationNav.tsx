@@ -9,8 +9,8 @@ const DocumentationNav = ({
 }) => {
   return (
     <div
-      className="w-64 mx-5 min-h-screen  
-        rounded-lg mt-2 bg-white p-4 border border-gray-200 shadow-lg"
+      className="md:w-64 mx-5 sm:w-42  
+        rounded-lg mt-2 bg-gray-50 p-4 border border-gray-200 shadow-lg"
     >
       <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
         Documentation
@@ -19,7 +19,7 @@ const DocumentationNav = ({
         <button
           key={category.value}
           className={`w-full py-3 px-4 rounded-lg 
-                my-1 shadow-sm border border-gray-200
+                my-1  border border-gray-200
                 text-left font-medium transition-all duration-300 text-sm 
                 ${
                   activeTab === category.value

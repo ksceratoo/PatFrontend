@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ErlangEditor from "../../components/Editors/ErlangEditor";
 import type { Route } from "./+types/index";
 
 export function meta({}: Route.MetaArgs) {
@@ -95,12 +96,12 @@ main() ->
               </div>
             </div>
 
-            <textarea
+            <ErlangEditor
               value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="w-full h-96 p-4 border border-gray-300 rounded-md font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your Erlang code here..."
-              disabled={isLoading}
+              onChange={setCode}
+              readOnly={isLoading}
+              height="400px"
+              title="Erlang Code Editor"
             />
 
             <div className="mt-4 text-sm text-gray-600">

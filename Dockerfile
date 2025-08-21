@@ -23,12 +23,12 @@ COPY . .
 RUN if [ ! -d "patCom/paterl" ]; then \
     git clone https://github.com/duncanatt/paterl.git patCom/paterl && \
     cd patCom/paterl && \
-    make clean && make && \
+    make && \
     chmod +x mbcheck; \
   else \
     echo "paterl directory exists, building mbcheck..." && \
     cd patCom/paterl && \
-    make clean && make && \
+    make && \
     chmod +x mbcheck; \
   fi
 

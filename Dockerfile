@@ -9,7 +9,14 @@ RUN apk add --no-cache \
   musl-dev \
   make \
   git \
+  opam \
   && rm -rf /var/cache/apk/*
+
+# Setup OCaml
+RUN opam init --disable-sandboxing --yes && \
+  opam switch create 4.14.0 && \
+  eval $(opam env) && \
+  opam install dune menhir ppx_import visitors cmdliner z3 bag --yes
 
 # Copy package files
 COPY package*.json ./
@@ -24,6 +31,7 @@ COPY . .
 RUN echo "Building mbcheck..." && \
   git clone https://github.com/SimonJF/mbcheck.git temp_mbcheck && \
   cd temp_mbcheck && \
+  eval $(opam env) && \
   make && \
   cp _build/default/bin/main.exe ../patCom/paterl/mbcheck/mbcheck && \
   cd .. && \

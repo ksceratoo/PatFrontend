@@ -47,13 +47,33 @@ async function runMbcheck(code: string) {
     "mbcheck",
     tempFileName
   );
-  const mbcheckPath = path.join(
+  // Try Linux binary first (for cloud deployment), then fall back to local binary
+  const mbcheckLinuxPath = path.join(
+    process.cwd(),
+    "patCom",
+    "paterl",
+    "mbcheck",
+    "mbcheck-linux"
+  );
+  const mbcheckLocalPath = path.join(
     process.cwd(),
     "patCom",
     "paterl",
     "mbcheck",
     "mbcheck"
   );
+
+  let mbcheckPath = mbcheckLocalPath;
+
+  // Check if Linux binary exists (for cloud deployment)
+  try {
+    await access(mbcheckLinuxPath, fs.constants.X_OK);
+    mbcheckPath = mbcheckLinuxPath;
+    console.log("Using Linux mbcheck binary");
+  } catch {
+    // Fall back to local binary
+    console.log("Linux binary not found, trying local binary");
+  }
 
   try {
     // Preflight: ensure mbcheck exists and is executable

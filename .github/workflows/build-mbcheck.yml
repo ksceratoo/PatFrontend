@@ -1,0 +1,49 @@
+name: Build mbcheck for deployment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "patCom/paterl/mbcheck/**"
+  workflow_dispatch:
+
+jobs:
+  build-mbcheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.14.x
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgmp-dev pkg-config
+
+      - name: Install OCaml dependencies
+        run: |
+          opam install -y dune menhir ppx_import visitors cmdliner z3 bag
+
+      - name: Build mbcheck
+        run: |
+          cd patCom/paterl/mbcheck
+          eval $(opam env)
+          make clean
+          make
+
+      - name: Copy binary
+        run: |
+          cp patCom/paterl/mbcheck/_build/default/bin/main.exe patCom/paterl/mbcheck/mbcheck-linux
+          chmod +x patCom/paterl/mbcheck/mbcheck-linux
+
+      - name: Commit binary
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add patCom/paterl/mbcheck/mbcheck-linux
+          git diff --staged --quiet || git commit -m "Update mbcheck Linux binary"
+          git push

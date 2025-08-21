@@ -45,7 +45,7 @@ jobs:
           chmod +x mbcheck-linux
 
       - name: Upload binary as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mbcheck-linux
           path: mbcheck-linux

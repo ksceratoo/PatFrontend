@@ -19,14 +19,15 @@ RUN npm ci --only=production && npm cache clean --force
 # Copy application code
 COPY . .
 
-# Clone the paterl submodule/repository and build mbcheck
-RUN if [ ! -d "patCom/paterl" ]; then \
-    git clone https://github.com/duncanatt/paterl.git patCom/paterl; \
-  fi && \
-  echo "Building mbcheck..." && \
-  cd patCom/paterl/mbcheck && \
+# Clone and build mbcheck from the correct repository
+RUN echo "Building mbcheck..." && \
+  git clone https://github.com/SimonJF/mbcheck.git temp_mbcheck && \
+  cd temp_mbcheck && \
   make && \
-  chmod +x mbcheck
+  cp _build/default/bin/main.exe ../patCom/paterl/mbcheck/mbcheck && \
+  cd .. && \
+  rm -rf temp_mbcheck && \
+  chmod +x patCom/paterl/mbcheck/mbcheck
 
 # Set executable permissions for mbcheck binaries
 RUN chmod +x patCom/paterl/mbcheck/mbcheck mbcheck-linux 2>/dev/null || true

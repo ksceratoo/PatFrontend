@@ -1,6 +1,6 @@
 const Footer = () => {
   return (
-    <div className="w-full flex p-6 items-center justify-between">
+    <div className="w-full flex p-6 items-center justify-between ">
       <img
         src="/UoG_colour.png"
         alt="Uni"

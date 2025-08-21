@@ -3,8 +3,6 @@ name: Build mbcheck for deployment
 on:
   push:
     branches: [main]
-    paths:
-      - "patCom/paterl/mbcheck/**"
   workflow_dispatch:
 
 jobs:

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: pat-frontend
+    env: docker
+    repo: https://github.com/ksceratoo/PatFrontend.git
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    buildCommand: docker build -t pat-frontend .
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    healthCheckPath: /api/health
+    disk:
+      name: pat-data
+      mountPath: /app/data
+      sizeGB: 1

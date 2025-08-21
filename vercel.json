@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "app/routes/api/check-pat.tsx": {
+      "maxDuration": 10
+    },
+    "app/routes/api/execute-erlang.tsx": {
+      "maxDuration": 15
+    }
+  },
+  "buildCommand": "npm run build:vercel",
+  "installCommand": "npm install",
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "regions": ["iad1"],
+  "framework": "react-router"
+}

@@ -10,6 +10,7 @@ RUN apk add --no-cache \
   make \
   git \
   opam \
+  python3 \
   && rm -rf /var/cache/apk/*
 
 # Setup OCaml

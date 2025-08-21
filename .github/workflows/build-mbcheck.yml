@@ -24,25 +24,26 @@ jobs:
 
       - name: Install OCaml dependencies
         run: |
-          opam install dune menhir ppx_import visitors cmdliner z3 bag
+          opam install dune menhir ppx_import visitors cmdliner z3 bag --yes
 
       - name: Build mbcheck
         run: |
-          cd patCom/paterl/mbcheck
-          make clean
+          git clone https://github.com/SimonJF/mbcheck.git temp_mbcheck
+          cd temp_mbcheck
           make
           ls -la mbcheck
 
       - name: Test mbcheck
         run: |
-          cd patCom/paterl/mbcheck
+          cd temp_mbcheck
           echo 'def main(): Unit { print("Hello") }' > test.pat
           ./mbcheck test.pat && echo "Build successful!" || echo "Build failed!"
 
       - name: Copy binary to project root
         run: |
-          cp patCom/paterl/mbcheck/_build/default/bin/main.exe mbcheck-linux
+          cp temp_mbcheck/_build/default/bin/main.exe mbcheck-linux
           chmod +x mbcheck-linux
+          rm -rf temp_mbcheck
 
       - name: Upload binary as artifact
         uses: actions/upload-artifact@v4

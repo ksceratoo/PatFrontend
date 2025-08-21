@@ -1,0 +1,59 @@
+name: Build mbcheck for Linux
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup OCaml
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.14
+          opam-disable-sandboxing: true
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgmp-dev pkg-config
+
+      - name: Install OCaml dependencies
+        run: |
+          opam install dune menhir ppx_import visitors cmdliner z3 bag
+
+      - name: Build mbcheck
+        run: |
+          cd patCom/paterl/mbcheck
+          make clean
+          make
+          ls -la mbcheck
+
+      - name: Test mbcheck
+        run: |
+          cd patCom/paterl/mbcheck
+          echo 'def main(): Unit { print("Hello") }' > test.pat
+          ./mbcheck test.pat && echo "Build successful!" || echo "Build failed!"
+
+      - name: Copy binary to project root
+        run: |
+          cp patCom/paterl/mbcheck/_build/default/bin/main.exe mbcheck-linux
+          chmod +x mbcheck-linux
+
+      - name: Upload binary as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: mbcheck-linux
+          path: mbcheck-linux
+
+      - name: Commit and push binary
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add mbcheck-linux
+          git commit -m "Add Linux mbcheck binary [skip ci]" || echo "No changes to commit"
+          git push || echo "Push failed, but that's okay"

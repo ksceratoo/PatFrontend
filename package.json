@@ -7,8 +7,7 @@
     "build:vercel": "chmod +x patCom/paterl/mbcheck/mbcheck && react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc",
-    "postinstall": "chmod +x patCom/paterl/mbcheck/mbcheck"
+    "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

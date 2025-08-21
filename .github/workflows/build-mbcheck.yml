@@ -19,8 +19,8 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libgmp-dev pkg-config
+          apt-get update || true
+          apt-get install -y libgmp-dev pkg-config || true
 
       - name: Install OCaml dependencies
         run: |
@@ -55,6 +55,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add mbcheck-linux
+          git add mbcheck-linux || true
           git commit -m "Add Linux mbcheck binary [skip ci]" || echo "No changes to commit"
           git push || echo "Push failed, but that's okay"

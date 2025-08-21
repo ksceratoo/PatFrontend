@@ -21,15 +21,6 @@ export async function action({ request }: any) {
       );
     }
 
-    // Check if we're in a serverless environment that can't run mbcheck
-    const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
-
-    if (isVercel) {
-      // For Vercel, provide a fallback analysis
-      const fallbackResult = await runFallbackAnalysis(code);
-      return Response.json(fallbackResult);
-    }
-
     // Use real mbcheck for Pat type checking
     const typeCheckResult = await runMbcheck(code);
 
@@ -46,110 +37,20 @@ export async function action({ request }: any) {
   }
 }
 
-// Fallback analysis for serverless environments where mbcheck can't run
-async function runFallbackAnalysis(code: string) {
-  const errors: any[] = [];
-  const warnings: any[] = [];
-  const typeInfo: string[] = [];
-
-  // Basic syntax checks
-  const lines = code.split("\n");
-
-  // Check for basic Pat syntax
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const lineNum = i + 1;
-
-    // Check for common syntax errors
-    if (line.includes("interface") && !line.includes("{")) {
-      errors.push({
-        type: "Syntax Error",
-        message: "Interface declaration missing opening brace '{'",
-        line: lineNum,
-        severity: "error",
-      });
-    }
-
-    if (line.includes("def ") && !line.includes(":")) {
-      errors.push({
-        type: "Syntax Error",
-        message: "Function definition missing return type annotation",
-        line: lineNum,
-        severity: "error",
-      });
-    }
-
-    // Check for unmatched braces
-    const openBraces = (line.match(/\{/g) || []).length;
-    const closeBraces = (line.match(/\}/g) || []).length;
-    if (openBraces > closeBraces) {
-      warnings.push({
-        type: "Warning",
-        message: "Possible unmatched opening brace",
-        line: lineNum,
-        severity: "warning",
-      });
-    }
-  }
-
-  // Check for basic structure
-  if (!code.includes("interface")) {
-    warnings.push({
-      type: "Warning",
-      message:
-        "No interface definitions found - consider adding type specifications",
-      line: 1,
-      severity: "warning",
-    });
-  }
-
-  if (!code.includes("def ")) {
-    warnings.push({
-      type: "Warning",
-      message: "No function definitions found",
-      line: 1,
-      severity: "warning",
-    });
-  }
-
-  // Provide basic type information
-  if (code.includes("interface")) {
-    typeInfo.push("Basic interface syntax validation completed");
-  }
-
-  if (code.includes("def ")) {
-    typeInfo.push("Function definitions detected");
-  }
-
-  if (code.includes("spawn")) {
-    typeInfo.push("Concurrent process spawning detected");
-  }
-
-  if (code.includes("guard")) {
-    typeInfo.push("Message guard patterns detected");
-  }
-
-  const success = errors.length === 0;
-
-  return {
-    success,
-    errors,
-    warnings,
-    typeInfo,
-    summary: success
-      ? "Basic Pat syntax analysis completed - full type checking requires local development environment"
-      : `Found ${errors.length} syntax issues - please review and fix`,
-    error:
-      "Running in serverless environment - full mbcheck analysis not available. Please test locally for complete type checking.",
-  };
-}
-
 // Run real mbcheck on Pat code
 async function runMbcheck(code: string) {
   const tempFileName = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}.pat`;
   const mbcheckDir = path.join(process.cwd(), "patCom", "paterl", "mbcheck");
   const tempFilePath = path.join(mbcheckDir, tempFileName);
-  const mbcheckPath = path.join(mbcheckDir, "mbcheck");
+
+  // Try Linux binary first, then fallback to regular mbcheck
+  let mbcheckPath = path.join(process.cwd(), "mbcheck-linux");
+  try {
+    await access(mbcheckPath, fs.constants.X_OK);
+  } catch {
+    // Fallback to original mbcheck
+    mbcheckPath = path.join(mbcheckDir, "mbcheck");
+  }
 
   // Check if we're in a serverless environment
   const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;

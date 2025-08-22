@@ -17,7 +17,7 @@ RUN npm ci && npm cache clean --force
 COPY . .
 
 # Ensure mbcheck binaries are executable
-RUN chmod +x mbcheck-linux mbcheck/mbcheck 2>/dev/null || true
+RUN chmod +x mbcheck-linux mbcheck/_build/default/bin/main.exe 2>/dev/null || true
 
 # Build the application
 RUN npm run build

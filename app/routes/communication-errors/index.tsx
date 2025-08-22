@@ -515,9 +515,9 @@ ${
   notAvailable
     ? `
 
-🔧 How to enable Pat type checking on the server:
+How to enable Pat type checking on the server:
 1) Build mbcheck:
-   - See patCom/paterl/mbcheck/README.md
+   - See mbcheck/README.md
    - Or visit https://github.com/SimonJF/mbcheck
 2) Ensure the built binary is at: patCom/paterl/mbcheck/mbcheck and is executable (chmod +x)
 3) Restart the server and retry.

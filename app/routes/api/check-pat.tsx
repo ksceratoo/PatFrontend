@@ -40,50 +40,21 @@ export async function action({ request }: any) {
 // Run real mbcheck on Pat code
 async function runMbcheck(code: string) {
   const tempFileName = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}.pat`;
-  const tempFilePath = path.join(process.cwd(), "mbcheck", tempFileName);
-
-  // Try Linux binary first, then fallback to regular mbcheck
-  let mbcheckPath = path.join(process.cwd(), "mbcheck-linux");
-  try {
-    await access(mbcheckPath, fs.constants.X_OK);
-    // Check if it's a placeholder file
-    const fileContent = await fs.readFileSync(mbcheckPath, "utf8");
-    if (fileContent.includes("placeholder")) {
-      throw new Error("Placeholder file detected");
-    }
-  } catch {
-    // Fallback to mbcheck in mbcheck directory
-    mbcheckPath = path.join(process.cwd(), "mbcheck", "mbcheck");
-    try {
-      await access(mbcheckPath, fs.constants.X_OK);
-    } catch {
-      return {
-        success: false,
-        errors: [
-          {
-            type: "System Error",
-            message:
-              "No working mbcheck binary found. Please wait for GitHub Actions to build mbcheck-linux or ensure mbcheck is available.",
-            line: 1,
-            severity: "error",
-          },
-        ],
-        warnings: [],
-        typeInfo: [],
-        summary: "Type checker not available",
-      };
-    }
-  }
-
-  // Check if we're in a serverless environment
-  const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+  const mbcheckDir = path.join(process.cwd(), "mbcheck");
+  const tempFilePath = path.join(mbcheckDir, tempFileName);
+  const mbcheckPath = path.join(
+    mbcheckDir,
+    "_build",
+    "default",
+    "bin",
+    "main.exe"
+  );
 
   try {
     // Preflight: ensure mbcheck exists and is executable
     try {
       await access(mbcheckPath, fs.constants.X_OK);
-    } catch (accessError) {
-      console.error("mbcheck access error:", accessError);
+    } catch {
       return {
         success: false,
         errors: [],
@@ -92,8 +63,7 @@ async function runMbcheck(code: string) {
         summary: "Pat type checker is not available on the server",
         error:
           `Missing or non-executable mbcheck at: ${mbcheckPath}.\n` +
-          `Environment: ${isVercel ? "Vercel serverless" : "Local development"}\n` +
-          `Please build it (see patCom/paterl/mbcheck/README.md) or adjust the server path.`,
+          `Please build it (see mbcheck/README.md) or adjust the server path.`,
       };
     }
 
@@ -101,22 +71,12 @@ async function runMbcheck(code: string) {
     await writeFile(tempFilePath, code, "utf8");
 
     // Run mbcheck with verbose output
-    // Use absolute path and handle serverless environment limitations
-    const mbcheckDir = path.dirname(mbcheckPath);
-    const command = isVercel
-      ? `"${mbcheckPath}" "${tempFilePath}" -v`
-      : `cd "${mbcheckDir}" && ./"${path.basename(mbcheckPath)}" "${tempFileName}" -v`;
-
-    console.log("Executing mbcheck command:", command);
-
-    const { stdout, stderr } = await execAsync(command, {
-      timeout: isVercel ? 5000 : 10000, // Shorter timeout for serverless
-      maxBuffer: 1024 * 1024, // 1MB buffer
-      env: {
-        ...process.env,
-        PATH: `${process.env.PATH}:/usr/local/bin:/usr/bin:/bin`,
-      },
-    });
+    const { stdout, stderr } = await execAsync(
+      `cd "${mbcheckDir}" && ./_build/default/bin/main.exe "${tempFileName}" -v`,
+      {
+        timeout: 10000, // 10 second timeout
+      }
+    );
 
     // Parse mbcheck output
     const result = parseMbcheckOutput(stdout, stderr);
@@ -131,28 +91,8 @@ async function runMbcheck(code: string) {
       await unlink(tempFilePath);
     } catch {}
 
-    console.error("mbcheck execution error:", error);
-
-    // Handle different types of errors
-    if (error.code === "ENOENT") {
-      return {
-        success: false,
-        errors: [],
-        warnings: [],
-        typeInfo: [],
-        summary: "Pat type checker executable not found",
-        error: `mbcheck executable not found at: ${mbcheckPath}. This may be due to deployment environment limitations.`,
-      };
-    } else if (error.code === "EACCES") {
-      return {
-        success: false,
-        errors: [],
-        warnings: [],
-        typeInfo: [],
-        summary: "Pat type checker permission denied",
-        error: `Permission denied for mbcheck executable. Please check file permissions.`,
-      };
-    } else if (error.code === 123) {
+    // Handle mbcheck errors
+    if (error.code === 123) {
       // mbcheck type checking failed
       return parseMbcheckError(error.stderr || error.stdout || error.message);
     } else if (error.code === 124) {
@@ -171,24 +111,6 @@ async function runMbcheck(code: string) {
         typeInfo: [],
         summary: "Pat syntax error - please check your code structure",
       };
-    } else if (error.code === "ETIMEDOUT") {
-      return {
-        success: false,
-        errors: [
-          {
-            type: "Timeout Error",
-            message: `Type checking timed out after ${isVercel ? "5" : "10"} seconds`,
-            line: 1,
-            severity: "error",
-          },
-        ],
-        warnings: [],
-        typeInfo: [],
-        summary: "Type checking timeout",
-        error: isVercel
-          ? "Vercel serverless function timeout. Consider using a dedicated server."
-          : "Local execution timeout.",
-      };
     } else {
       // Other errors (timeout, file system, etc.)
       return {
@@ -204,7 +126,6 @@ async function runMbcheck(code: string) {
         warnings: [],
         typeInfo: [],
         summary: "Type checking system error",
-        error: `Environment: ${isVercel ? "Vercel serverless" : "Local development"}\nFull error: ${error.stack || error.message}`,
       };
     }
   }

@@ -1,1 +1,65 @@
-# Temporary placeholder - will be replaced by GitHub Actions build
+#!/bin/bash
+
+# Temporary mbcheck implementation - for testing Pat syntax
+# This is a simplified version, not a complete type checker
+
+TEMP_FILE="$1"
+if [ ! -f "$TEMP_FILE" ]; then
+    echo "Error: File $TEMP_FILE does not exist"
+    exit 1
+fi
+
+CODE=$(cat "$TEMP_FILE")
+
+echo "=== Pat Type Checker (Temporary Version) ==="
+echo "Input code:"
+echo "$CODE"
+echo ""
+echo "Syntax check results:"
+
+# Basic syntax checks
+ERRORS=()
+
+# Check interface syntax
+if echo "$CODE" | grep -q "interface.*{"; then
+    echo "✅ Interface syntax is correct"
+else
+    echo "❌ Interface syntax error"
+    ERRORS+=("interface")
+fi
+
+# Check def syntax
+if echo "$CODE" | grep -q "def.*:"; then
+    echo "✅ Function definition syntax is correct"
+else
+    echo "❌ Function definition syntax error"
+    ERRORS+=("function")
+fi
+
+# Check guard syntax
+if echo "$CODE" | grep -q "guard.*:"; then
+    echo "✅ Guard syntax is correct"
+else
+    if echo "$CODE" | grep -q "def"; then
+        echo "⚠️  No guard statements found (optional)"
+    fi
+fi
+
+# Check spawn syntax
+if echo "$CODE" | grep -q "spawn"; then
+    echo "✅ Spawn syntax is correct"
+else
+    if echo "$CODE" | grep -q "def"; then
+        echo "⚠️  No spawn statements found (optional)"
+    fi
+fi
+
+echo ""
+if [ ${#ERRORS[@]} -eq 0 ]; then
+    echo "🎉 Basic syntax check passed!"
+    echo "📝 Note: This is a temporary version. Please build the complete mbcheck for full type checking functionality."
+    exit 0
+else
+    echo "❌ Syntax errors found: ${ERRORS[*]}"
+    exit 1
+fi

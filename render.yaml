@@ -3,7 +3,6 @@ services:
     name: pat-frontend
     env: docker
     repo: https://github.com/ksceratoo/PatFrontend.git
-
     dockerContext: .
     buildCommand: docker build -t pat-frontend .
     startCommand: npm start

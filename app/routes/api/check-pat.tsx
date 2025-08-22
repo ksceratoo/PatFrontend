@@ -71,7 +71,7 @@ async function runMbcheck(code: string) {
 
     // Run mbcheck with verbose output
     const { stdout, stderr } = await execAsync(
-      `cd "${mbcheckDir}" && ./_build/default/bin/main.exe "${tempFileName}" -v`,
+      `"${mbcheckPath}" "${tempFilePath}" -v`,
       {
         timeout: 10000, // 10 second timeout
       }

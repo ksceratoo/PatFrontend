@@ -493,11 +493,14 @@ export default function CommunicationErrorsPage() {
 
       if (result.success) {
         const output = `Pat Type Checking: PASSED
- 
+
 ${result.summary}
- 
+
 Type Information:
-${result.typeInfo.map((info: string) => `• ${info}`).join("\n")}`;
+${result.typeInfo && result.typeInfo.length > 0
+  ? result.typeInfo.map((info: string) => `• ${info}`).join("\n")
+  : "• No additional type information available"
+}`;
 
         setAnalysisResult(output);
       } else {
@@ -510,7 +513,10 @@ ${result.typeInfo.map((info: string) => `• ${info}`).join("\n")}`;
 ${result.summary}
  
 Errors found:
-${result.errors.map((e: any) => `• Line ${e.line}: [${e.type}] ${e.message}`).join("\n")}
+${result.errors && result.errors.length > 0
+  ? result.errors.map((e: any) => `• Line ${e.line}: [${e.type}] ${e.message}`).join("\n")
+  : "• Analysis error: Cannot read properties of undefined (reading 'map')"
+}
 ${
   notAvailable
     ? `

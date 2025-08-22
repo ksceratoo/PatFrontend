@@ -226,7 +226,10 @@ export default function PatSandbox() {
 ${result.summary}
 
 Type Information:
-${result.typeInfo.map((info: string) => `• ${info}`).join("\n")}`;
+${result.typeInfo && result.typeInfo.length > 0
+  ? result.typeInfo.map((info: string) => `• ${info}`).join("\n")
+  : "• No additional type information available"
+}`;
 
         if (result.warnings && result.warnings.length > 0) {
           output += `\n\n⚠️ Warnings:
@@ -253,7 +256,10 @@ ${result.warnings.map((w: any) => `• Line ${w.line}: ${w.message}`).join("\n")
 ${result.summary}
 
  Errors found:
-${result.errors.map((e: any) => `• Line ${e.line}: [${e.type}] ${e.message}`).join("\n")}`;
+${result.errors && result.errors.length > 0
+  ? result.errors.map((e: any) => `• Line ${e.line}: [${e.type}] ${e.message}`).join("\n")
+  : "• Analysis error: Cannot read properties of undefined (reading 'map')"
+}`;
 
         if (result.warnings && result.warnings.length > 0) {
           errorOutput += `\n\n⚠️ Warnings:

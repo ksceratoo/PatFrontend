@@ -21,8 +21,7 @@ if ! command -v dune &> /dev/null; then
         opam install --yes dune
     else
         echo "❌ Neither dune nor opam found. Please install OCaml and Dune first."
-        echo "On macOS: brew install opam && opam install dune"
-        echo "On Ubuntu: sudo apt install opam && opam install dune"
+        echo "In Docker: This should be handled by the base image"
         exit 1
     fi
 fi
@@ -43,7 +42,8 @@ dune build
 # Check if build succeeded
 if [ -f "_build/default/bin/main.exe" ]; then
     echo "✅ mbcheck built successfully!"
-    chmod +x _build/default/bin/main.exe
+    # Use sudo for chmod in Docker environment
+    (sudo chmod +x _build/default/bin/main.exe 2>/dev/null) || chmod +x _build/default/bin/main.exe
     ls -la _build/default/bin/main.exe
 
     # Test the binary

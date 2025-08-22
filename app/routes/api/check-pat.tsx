@@ -45,7 +45,7 @@ async function runMbcheck(code: string) {
 
   // Try pre-built binary first, then fallback to build directory
   let mbcheckPath = path.join(process.cwd(), "mbcheck-linux");
-  if (!require("fs").existsSync(mbcheckPath)) {
+  if (!fs.existsSync(mbcheckPath)) {
     mbcheckPath = path.join(mbcheckDir, "_build", "default", "bin", "main.exe");
   }
 

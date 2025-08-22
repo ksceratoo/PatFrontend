@@ -6,7 +6,7 @@ RUN sudo apk add --no-cache \
   npm \
   ca-certificates \
   gmp-dev \
-  libgmp \
+  gmp \
   && sudo rm -rf /var/cache/apk/*
 
 WORKDIR /app

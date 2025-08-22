@@ -1,11 +1,13 @@
-FROM node:18-alpine
+FROM ocaml/opam:alpine-3.18-ocaml-4.14
+
+# Install Node.js
+RUN sudo apk add --no-cache nodejs npm && \
+  sudo rm -rf /var/cache/apk/*
 
 WORKDIR /app
 
-# Install basic system dependencies
-RUN apk add --no-cache \
-  ca-certificates \
-  && rm -rf /var/cache/apk/*
+# Initialize opam environment
+RUN eval $(opam env)
 
 # Copy package files
 COPY package*.json ./
@@ -16,15 +18,30 @@ RUN npm ci && npm cache clean --force
 # Copy application code
 COPY . .
 
-# Ensure mbcheck binaries are executable
-RUN chmod +x mbcheck-linux mbcheck/_build/default/bin/main.exe 2>/dev/null || true
+# Build mbcheck using the build script
+RUN chmod +x build-mbcheck.sh && \
+  ./build-mbcheck.sh || \
+  (echo "Build script failed, checking for existing binary..." && \
+  if [ -f "mbcheck/_build/default/bin/main.exe" ]; then \
+  echo "Found existing binary, making executable..." && \
+  chmod +x mbcheck/_build/default/bin/main.exe; \
+  else \
+  echo "No mbcheck binary found - Pat type checking will not work"; \
+  fi)
 
-# Build the application
+# Verify mbcheck was built correctly
+RUN ls -la mbcheck/_build/default/bin/main.exe 2>/dev/null || echo "Warning: mbcheck executable not found"
+
+# Build the Node.js application
 RUN npm run build
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
   adduser -S nextjs -u 1001
+
+# Ensure mbcheck executable has correct permissions
+RUN chmod +x mbcheck/_build/default/bin/main.exe && \
+  ls -la mbcheck/_build/default/bin/main.exe
 
 # Change ownership
 RUN chown -R nextjs:nodejs /app

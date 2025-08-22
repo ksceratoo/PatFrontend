@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "build:vercel": "chmod +x patCom/paterl/mbcheck/mbcheck && react-router build",
+    "build:vercel": "chmod +x mbcheck/_build/default/bin/main.exe && react-router build",
+    "build:mbcheck": "chmod +x build-mbcheck.sh && ./build-mbcheck.sh",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"

@@ -17,3 +17,5 @@ services:
       name: pat-data
       mountPath: /app/data
       sizeGB: 1
+    # Increase build timeout for OCaml compilation
+    buildTimeout: 30m

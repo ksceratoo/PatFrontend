@@ -42,13 +42,12 @@ async function runMbcheck(code: string) {
   const tempFileName = `temp_${Date.now()}_${Math.random().toString(36).substring(7)}.pat`;
   const mbcheckDir = path.join(process.cwd(), "mbcheck");
   const tempFilePath = path.join(mbcheckDir, tempFileName);
-  const mbcheckPath = path.join(
-    mbcheckDir,
-    "_build",
-    "default",
-    "bin",
-    "main.exe"
-  );
+
+  // Try pre-built binary first, then fallback to build directory
+  let mbcheckPath = path.join(process.cwd(), "mbcheck-binary");
+  if (!require("fs").existsSync(mbcheckPath)) {
+    mbcheckPath = path.join(mbcheckDir, "_build", "default", "bin", "main.exe");
+  }
 
   try {
     // Preflight: ensure mbcheck exists and is executable

@@ -22,8 +22,8 @@ RUN npm run build
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
-# Ensure any existing mbcheck binary has correct permissions
-RUN chmod +x mbcheck/_build/default/bin/main.exe 2>/dev/null || echo "No mbcheck binary found"
+# Use pre-built mbcheck binary
+RUN chmod +x mbcheck-binary 2>/dev/null || echo "No mbcheck binary found"
 
 # Change ownership
 RUN chown -R nextjs:nodejs /app

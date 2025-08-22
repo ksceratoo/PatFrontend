@@ -33,7 +33,7 @@ fi
 
 # Install dependencies
 echo "Installing dependencies..."
-opam install --yes --deps-only . || echo "⚠️  Dependency installation had issues"
+opam install --yes cmdliner visitors ppx_import z3 menhir bag || echo "⚠️  Dependency installation had issues"
 
 # Build the project
 echo "Building mbcheck..."

@@ -18,15 +18,15 @@ RUN npm ci && npm cache clean --force
 # Copy application code
 COPY . .
 
-# Build mbcheck using the build script with proper permissions
-RUN sudo chmod +x build-mbcheck.sh && \
-  ./build-mbcheck.sh || \
-  (echo "Build script failed, trying manual build..." && \
-  eval $(opam env) && \
+# Build mbcheck with proper OCaml environment setup
+RUN eval $(opam env) && \
   cd mbcheck && \
-  opam install --yes --deps-only . && \
+  echo "Installing dependencies..." && \
+  opam install --yes cmdliner visitors ppx_import z3 menhir bag && \
+  echo "Building mbcheck..." && \
   dune build && \
-  sudo chmod +x _build/default/bin/main.exe)
+  echo "Setting permissions..." && \
+  sudo chmod +x _build/default/bin/main.exe
 
 # Verify mbcheck was built correctly
 RUN ls -la mbcheck/_build/default/bin/main.exe 2>/dev/null || echo "Warning: mbcheck executable not found"

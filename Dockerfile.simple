@@ -23,7 +23,7 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
 # Use pre-built mbcheck binary
-RUN chmod +x mbcheck-binary 2>/dev/null || echo "No mbcheck binary found"
+RUN chmod +x mbcheck-linux 2>/dev/null || echo "No mbcheck binary found"
 
 # Change ownership
 RUN chown -R nextjs:nodejs /app
